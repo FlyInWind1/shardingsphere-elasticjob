@@ -35,16 +35,16 @@ import org.quartz.TriggerKey;
  */
 @RequiredArgsConstructor
 public final class JobScheduleController {
-    
+
     private final Scheduler scheduler;
-    
+
     private final JobDetail jobDetail;
-    
+
     private final String triggerIdentity;
-    
+
     /**
      * Schedule job.
-     * 
+     *
      * @param cron CRON expression
      */
     public void scheduleJob(final String cron) {
@@ -57,10 +57,27 @@ public final class JobScheduleController {
             throw new JobSystemException(ex);
         }
     }
-    
+
+    /**
+     * Fix delay job.
+     *
+     * @param fixDelay    fixDelay
+     * @param repeatCount repeatCount
+     */
+    public void scheduleJob(final int fixDelay, final Integer repeatCount) {
+        try {
+            if (!scheduler.checkExists(jobDetail.getKey())) {
+                scheduler.scheduleJob(jobDetail, createFixDelayTrigger(fixDelay, repeatCount));
+            }
+            scheduler.start();
+        } catch (final SchedulerException ex) {
+            throw new JobSystemException(ex);
+        }
+    }
+
     /**
      * Reschedule job.
-     * 
+     *
      * @param cron CRON expression
      */
     public synchronized void rescheduleJob(final String cron) {
@@ -73,7 +90,7 @@ public final class JobScheduleController {
             throw new JobSystemException(ex);
         }
     }
-    
+
     /**
      * Reschedule OneOff job.
      */
@@ -87,14 +104,24 @@ public final class JobScheduleController {
             throw new JobSystemException(ex);
         }
     }
-    
+
     private Trigger createCronTrigger(final String cron) {
         return TriggerBuilder.newTrigger().withIdentity(triggerIdentity).withSchedule(CronScheduleBuilder.cronSchedule(cron).withMisfireHandlingInstructionDoNothing()).build();
     }
-    
+
+    private Trigger createFixDelayTrigger(final int fixDelay, final Integer repeatCount) {
+        SimpleScheduleBuilder scheduleBuilder;
+        if (repeatCount == null) {
+            scheduleBuilder = SimpleScheduleBuilder.repeatSecondlyForever(fixDelay);
+        } else {
+            scheduleBuilder = SimpleScheduleBuilder.repeatSecondlyForTotalCount(repeatCount, fixDelay);
+        }
+        return TriggerBuilder.newTrigger().withIdentity(triggerIdentity).withSchedule(scheduleBuilder).build();
+    }
+
     /**
      * Judge job is pause or not.
-     * 
+     *
      * @return job is pause or not
      */
     public synchronized boolean isPaused() {
@@ -104,7 +131,7 @@ public final class JobScheduleController {
             throw new JobSystemException(ex);
         }
     }
-    
+
     /**
      * Pause job.
      */
@@ -117,7 +144,7 @@ public final class JobScheduleController {
             throw new JobSystemException(ex);
         }
     }
-    
+
     /**
      * Resume job.
      */
@@ -130,7 +157,7 @@ public final class JobScheduleController {
             throw new JobSystemException(ex);
         }
     }
-    
+
     /**
      * Trigger job.
      */
@@ -151,20 +178,21 @@ public final class JobScheduleController {
             throw new JobSystemException(ex);
         }
     }
-    
+
     private Trigger createOneOffTrigger() {
         return TriggerBuilder.newTrigger().withIdentity(triggerIdentity).withSchedule(SimpleScheduleBuilder.simpleSchedule()).build();
     }
-    
+
     /**
      * Shutdown scheduler.
      */
     public synchronized void shutdown() {
         shutdown(false);
     }
-    
+
     /**
      * Shutdown scheduler graceful.
+     *
      * @param isCleanShutdown if wait jobs complete
      */
     public synchronized void shutdown(final boolean isCleanShutdown) {

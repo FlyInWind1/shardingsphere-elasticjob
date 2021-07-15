@@ -28,30 +28,33 @@
     <version>3.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>${project.artifactId}</name>
-    
+
     <modules>
         <module>elasticjob-api</module>
         <module>elasticjob-infra</module>
-        
+
         <module>elasticjob-lite</module>
         <module>elasticjob-cloud</module>
-        
+
         <module>elasticjob-distribution</module>
         <module>elasticjob-ecosystem</module>
     </modules>
-    
+
     <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+
         <revision>3.0.0-RC1-SNAPSHOT</revision>
         <java.version>1.8</java.version>
         <maven.version.range>[3.5.0,)</maven.version.range>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.build.locale>zh_CN</project.build.locale>
-        
+
         <guava.version>29.0-jre</guava.version>
         <commons-lang3.version>3.4</commons-lang3.version>
         <quartz.version>2.3.2</quartz.version>
         <curator.version>5.1.0</curator.version>
-        <lombok.version>1.18.12</lombok.version>
+        <lombok.version>1.18.20</lombok.version>
         <aspectj.version>1.9.1</aspectj.version>
         <slf4j.version>1.7.7</slf4j.version>
         <logback.version>1.2.3</logback.version>
@@ -64,18 +67,18 @@
         <netty.version>4.1.45.Final</netty.version>
         <mesos.version>1.1.0</mesos.version>
         <fenzo.version>0.11.1</fenzo.version>
-        
+
         <commons-dbcp2.version>2.7.0</commons-dbcp2.version>
         <commons-pool2.version>2.8.1</commons-pool2.version>
         <hikaricp.version>3.4.2</hikaricp.version>
         <mail.version>1.6.0</mail.version>
-        
+
         <mysql-connector-java.version>8.0.16</mysql-connector-java.version>
         <h2.version>1.4.184</h2.version>
         <junit.version>4.12</junit.version>
         <hamcrest.version>2.2</hamcrest.version>
         <mockito.version>2.7.21</mockito.version>
-        
+
         <apache-rat-plugin.version>0.12</apache-rat-plugin.version>
         <maven-compiler-plugin.version>3.3</maven-compiler-plugin.version>
         <maven-resources-plugin.version>2.7</maven-resources-plugin.version>
@@ -103,7 +106,7 @@
 
         <javadocExecutable>${java.home}/../bin/javadoc</javadocExecutable>
     </properties>
-    
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -154,7 +157,7 @@
                 <version>${curator.version}</version>
                 <scope>test</scope>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
@@ -269,7 +272,7 @@
                 <artifactId>netty-transport-native-unix-common</artifactId>
                 <version>${netty.version}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.mesos</groupId>
                 <artifactId>mesos</artifactId>
@@ -300,7 +303,7 @@
                 <artifactId>javax.mail</artifactId>
                 <version>${mail.version}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
@@ -352,7 +355,7 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-    
+
     <build>
         <finalName>apache-shardingsphere-elasticjob-${project.version}</finalName>
         <pluginManagement>
@@ -681,7 +684,7 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <reporting>
         <plugins>
             <plugin>
@@ -749,10 +752,10 @@
             </plugin>
         </plugins>
     </reporting>
-    
+
     <url>http://shardingsphere.apache.org/elasticjob/</url>
     <description>Distributed scheduled job solution</description>
-    
+
     <licenses>
         <license>
             <name>Apache License 2.0</name>
@@ -760,14 +763,14 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-    
+
     <scm>
         <connection>scm:git:https://github.com/apache/shardingsphere-elasticjob.git</connection>
         <developerConnection>scm:git:https://github.com/apache/shardingsphere-elasticjob.git</developerConnection>
         <url>https://github.com/apache/shardingsphere-elasticjob.git</url>
         <tag>HEAD</tag>
     </scm>
-    
+
     <mailingLists>
         <mailingList>
             <name>ShardingSphere Developer List</name>
