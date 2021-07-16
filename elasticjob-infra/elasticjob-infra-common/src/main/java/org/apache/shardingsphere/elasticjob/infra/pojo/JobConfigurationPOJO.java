@@ -36,49 +36,53 @@ import java.util.Properties;
 @Getter
 @Setter
 public final class JobConfigurationPOJO {
-    
+
     private String jobName;
-    
+
     private String cron;
-    
+
+    private int fixDelay;
+
+    private Integer repeatCount;
+
     private int shardingTotalCount;
-    
+
     private String shardingItemParameters;
-    
+
     private String jobParameter;
-    
+
     private boolean monitorExecution;
-    
+
     private boolean failover;
-    
+
     private boolean misfire;
-    
+
     private int maxTimeDiffSeconds = -1;
-    
+
     private int reconcileIntervalMinutes;
-    
+
     private String jobShardingStrategyType;
-    
+
     private String jobExecutorServiceHandlerType;
-    
+
     private String jobErrorHandlerType;
-    
+
     private Collection<String> jobListenerTypes = new ArrayList<>();
-    
+
     private Collection<YamlConfiguration<JobExtraConfiguration>> jobExtraConfigurations = new LinkedList<>();
-    
+
     private String description;
-    
+
     private Properties props = new Properties();
-    
+
     private boolean disabled;
-    
+
     private boolean overwrite;
-    
+
     private String label;
-    
+
     private boolean staticSharding;
-    
+
     /**
      * Convert to job configuration.
      *
@@ -86,7 +90,8 @@ public final class JobConfigurationPOJO {
      */
     public JobConfiguration toJobConfiguration() {
         JobConfiguration result = JobConfiguration.newBuilder(jobName, shardingTotalCount)
-                .cron(cron).shardingItemParameters(shardingItemParameters).jobParameter(jobParameter)
+                .cron(cron).fixDelay(fixDelay).repeatCount(repeatCount)
+                .shardingItemParameters(shardingItemParameters).jobParameter(jobParameter)
                 .monitorExecution(monitorExecution).failover(failover).misfire(misfire)
                 .maxTimeDiffSeconds(maxTimeDiffSeconds).reconcileIntervalMinutes(reconcileIntervalMinutes)
                 .jobShardingStrategyType(jobShardingStrategyType).jobExecutorServiceHandlerType(jobExecutorServiceHandlerType)
@@ -98,7 +103,7 @@ public final class JobConfigurationPOJO {
         }
         return result;
     }
-    
+
     /**
      * Convert from job configuration.
      *
@@ -109,6 +114,9 @@ public final class JobConfigurationPOJO {
     public static JobConfigurationPOJO fromJobConfiguration(final JobConfiguration jobConfiguration) {
         JobConfigurationPOJO result = new JobConfigurationPOJO();
         result.setJobName(jobConfiguration.getJobName());
+        result.setCron(jobConfiguration.getCron());
+        result.setFixDelay(jobConfiguration.getFixDelay());
+        result.setRepeatCount(jobConfiguration.getRepeatCount());
         result.setCron(jobConfiguration.getCron());
         result.setShardingTotalCount(jobConfiguration.getShardingTotalCount());
         result.setShardingItemParameters(jobConfiguration.getShardingItemParameters());
