@@ -18,6 +18,7 @@
 package org.apache.shardingsphere.elasticjob.lite.api.bootstrap.impl;
 
 import com.google.common.base.Preconditions;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shardingsphere.elasticjob.api.ElasticJob;
 import org.apache.shardingsphere.elasticjob.api.JobConfiguration;
 import org.apache.shardingsphere.elasticjob.lite.api.bootstrap.JobBootstrap;
@@ -44,9 +45,11 @@ public final class FixDelayBootstrap implements JobBootstrap {
      */
     public void schedule() {
         JobConfiguration jobConfig = jobScheduler.getJobConfig();
-        Preconditions.checkArgument(jobConfig.getFixDelay() > 0, "delay can not letter then 0");
-        Preconditions.checkArgument(jobConfig.getRepeatCount() == null || jobConfig.getRepeatCount() > 0, "repeatCount can not letter then 0");
-        jobScheduler.getJobScheduleController().scheduleJob(jobConfig.getFixDelay(), jobConfig.getRepeatCount());
+        Preconditions.checkArgument(StringUtils.isNotEmpty(jobConfig.getCron()), "Cron should be empty.");
+        Preconditions.checkArgument(jobConfig.getStartDate() != null, "startDate can not be null.");
+        Preconditions.checkArgument(jobConfig.getFixDelay() > 0, "delay can not letter then 0.");
+        Preconditions.checkArgument(jobConfig.getRepeatCount() == -1 || jobConfig.getRepeatCount() > 0, "repeatCount can not letter then -1 or 0.");
+        jobScheduler.getJobScheduleController().scheduleJob(jobConfig.getStartDate(), jobConfig.getFixDelay(), jobConfig.getRepeatCount());
     }
 
     @Override

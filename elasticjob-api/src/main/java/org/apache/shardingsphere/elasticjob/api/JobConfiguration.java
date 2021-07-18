@@ -27,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.Properties;
 
@@ -40,6 +41,8 @@ public final class JobConfiguration {
     private final String jobName;
 
     private final String cron;
+
+    private final Date startDate;
 
     private final int fixDelay;
 
@@ -99,6 +102,8 @@ public final class JobConfiguration {
 
         private final String jobName;
 
+        private Date startDate;
+
         private String cron;
 
         private int fixDelay = -1;
@@ -153,6 +158,17 @@ public final class JobConfiguration {
             if (null != cron) {
                 this.cron = cron;
             }
+            return this;
+        }
+
+        /**
+         * fixDelay unit second.
+         *
+         * @param startDate startDate
+         * @return job configuration builder
+         */
+        public Builder startDate(final Date startDate) {
+            this.startDate = startDate;
             return this;
         }
 
@@ -433,7 +449,7 @@ public final class JobConfiguration {
         public final JobConfiguration build() {
             Preconditions.checkArgument(!Strings.isNullOrEmpty(jobName), "jobName can not be empty.");
             Preconditions.checkArgument(shardingTotalCount > 0, "shardingTotalCount should larger than zero.");
-            return new JobConfiguration(jobName, cron, fixDelay, repeatCount, shardingTotalCount, shardingItemParameters, jobParameter,
+            return new JobConfiguration(jobName, cron, startDate, fixDelay, repeatCount, shardingTotalCount, shardingItemParameters, jobParameter,
                     monitorExecution, failover, misfire, maxTimeDiffSeconds, reconcileIntervalMinutes,
                     jobShardingStrategyType, jobExecutorServiceHandlerType, jobErrorHandlerType, jobListenerTypes,
                     extraConfigurations, description, props, disabled, overwrite, label, staticSharding);

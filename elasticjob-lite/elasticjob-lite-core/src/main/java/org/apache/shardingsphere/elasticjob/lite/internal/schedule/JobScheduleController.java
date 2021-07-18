@@ -29,6 +29,9 @@ import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.TriggerKey;
+import org.quartz.impl.triggers.SimpleTriggerImpl;
+
+import java.util.Date;
 
 /**
  * Job schedule controller.
@@ -61,13 +64,14 @@ public final class JobScheduleController {
     /**
      * Fix delay job.
      *
+     * @param startDate   startDate
      * @param fixDelay    fixDelay
      * @param repeatCount repeatCount
      */
-    public void scheduleJob(final int fixDelay, final Integer repeatCount) {
+    public void scheduleJob(final Date startDate, final int fixDelay, final int repeatCount) {
         try {
             if (!scheduler.checkExists(jobDetail.getKey())) {
-                scheduler.scheduleJob(jobDetail, createFixDelayTrigger(fixDelay, repeatCount));
+                scheduler.scheduleJob(jobDetail, createFixDelayTrigger(startDate, fixDelay, repeatCount));
             }
             scheduler.start();
         } catch (final SchedulerException ex) {
@@ -109,14 +113,34 @@ public final class JobScheduleController {
         return TriggerBuilder.newTrigger().withIdentity(triggerIdentity).withSchedule(CronScheduleBuilder.cronSchedule(cron).withMisfireHandlingInstructionDoNothing()).build();
     }
 
-    private Trigger createFixDelayTrigger(final int fixDelay, final Integer repeatCount) {
+    private Trigger createFixDelayTrigger(final Date startDate, final int fixDelay, final int repeatCount) {
+        long startTime = startDate.getTime();
+        long nowTime = System.currentTimeMillis();
+        Date finalStartDate;
+        int finalRepeatCount;
+        if (startTime < nowTime) {
+            long delayMillis = fixDelay * 1000L;
+            long passedMillis = startTime - nowTime;
+            if (repeatCount > 0 && passedMillis / delayMillis >= repeatCount) {
+                throw new JobSystemException("repeat count all consumed");
+            } else if (repeatCount > 0) {
+                finalRepeatCount = (int) (repeatCount - passedMillis / delayMillis);
+            } else {
+                finalRepeatCount = repeatCount;
+            }
+            long l = passedMillis % delayMillis;
+            finalStartDate = new Date(nowTime + delayMillis + l);
+        } else {
+            finalStartDate = startDate;
+            finalRepeatCount = repeatCount;
+        }
         SimpleScheduleBuilder scheduleBuilder;
-        if (repeatCount == null) {
+        if (finalRepeatCount < 0) {
             scheduleBuilder = SimpleScheduleBuilder.repeatSecondlyForever(fixDelay);
         } else {
-            scheduleBuilder = SimpleScheduleBuilder.repeatSecondlyForTotalCount(repeatCount, fixDelay);
+            scheduleBuilder = SimpleScheduleBuilder.repeatSecondlyForTotalCount(finalRepeatCount, fixDelay);
         }
-        return TriggerBuilder.newTrigger().withIdentity(triggerIdentity).withSchedule(scheduleBuilder).build();
+        return TriggerBuilder.newTrigger().startAt(finalStartDate).withIdentity(triggerIdentity).withSchedule(scheduleBuilder).build();
     }
 
     /**

@@ -27,6 +27,7 @@ import org.apache.shardingsphere.elasticjob.infra.yaml.exception.YamlConfigurati
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.Properties;
 
@@ -40,6 +41,8 @@ public final class JobConfigurationPOJO {
     private String jobName;
 
     private String cron;
+
+    private Date startDate;
 
     private int fixDelay;
 
@@ -90,7 +93,7 @@ public final class JobConfigurationPOJO {
      */
     public JobConfiguration toJobConfiguration() {
         JobConfiguration result = JobConfiguration.newBuilder(jobName, shardingTotalCount)
-                .cron(cron).fixDelay(fixDelay).repeatCount(repeatCount)
+                .cron(cron).startDate(startDate).fixDelay(fixDelay).repeatCount(repeatCount)
                 .shardingItemParameters(shardingItemParameters).jobParameter(jobParameter)
                 .monitorExecution(monitorExecution).failover(failover).misfire(misfire)
                 .maxTimeDiffSeconds(maxTimeDiffSeconds).reconcileIntervalMinutes(reconcileIntervalMinutes)
@@ -114,7 +117,7 @@ public final class JobConfigurationPOJO {
     public static JobConfigurationPOJO fromJobConfiguration(final JobConfiguration jobConfiguration) {
         JobConfigurationPOJO result = new JobConfigurationPOJO();
         result.setJobName(jobConfiguration.getJobName());
-        result.setCron(jobConfiguration.getCron());
+        result.setStartDate(jobConfiguration.getStartDate());
         result.setFixDelay(jobConfiguration.getFixDelay());
         result.setRepeatCount(jobConfiguration.getRepeatCount());
         result.setCron(jobConfiguration.getCron());
