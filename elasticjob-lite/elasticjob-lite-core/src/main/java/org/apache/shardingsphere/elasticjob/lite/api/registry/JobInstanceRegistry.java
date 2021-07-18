@@ -18,12 +18,14 @@
 package org.apache.shardingsphere.elasticjob.lite.api.registry;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.framework.recipes.cache.CuratorCache;
 import org.apache.shardingsphere.elasticjob.api.ElasticJob;
 import org.apache.shardingsphere.elasticjob.api.JobConfiguration;
 import org.apache.shardingsphere.elasticjob.infra.handler.sharding.JobInstance;
 import org.apache.shardingsphere.elasticjob.infra.pojo.JobConfigurationPOJO;
 import org.apache.shardingsphere.elasticjob.infra.yaml.YamlEngine;
+import org.apache.shardingsphere.elasticjob.lite.api.bootstrap.impl.FixDelayBootstrap;
 import org.apache.shardingsphere.elasticjob.lite.api.bootstrap.impl.OneOffJobBootstrap;
 import org.apache.shardingsphere.elasticjob.lite.api.bootstrap.impl.ScheduleJobBootstrap;
 import org.apache.shardingsphere.elasticjob.lite.internal.listener.AbstractJobListener;
@@ -40,23 +42,27 @@ import java.util.stream.IntStream;
  */
 @RequiredArgsConstructor
 public final class JobInstanceRegistry {
-    
+
     private static final Pattern JOB_CONFIG_COMPILE = Pattern.compile("/(\\w+)/config");
-    
+
     private final CoordinatorRegistryCenter regCenter;
-    
+
     private final JobInstance jobInstance;
-    
+
     /**
      * Register.
      */
     public void register() {
         CuratorCache cache = (CuratorCache) regCenter.getRawCache("/");
+        if (cache == null) {
+            regCenter.addCacheData("/");
+            cache = (CuratorCache) regCenter.getRawCache("/");
+        }
         cache.listenable().addListener(new JobInstanceRegistryListener());
     }
-    
+
     public class JobInstanceRegistryListener extends AbstractJobListener {
-        
+
         @Override
         protected void dataChanged(final String path, final Type eventType, final String data) {
             if (eventType != Type.NODE_CREATED || !isJobConfigPath(path)) {
@@ -66,19 +72,21 @@ public final class JobInstanceRegistry {
             if (jobConfig.isDisabled() || !isLabelMatch(jobConfig)) {
                 return;
             }
-            if (!jobConfig.getCron().isEmpty()) {
+            if (StringUtils.isNotEmpty(jobConfig.getCron())) {
                 new ScheduleJobBootstrap(regCenter, newElasticJobInstance(jobConfig), jobConfig).schedule();
+            } else if (jobConfig.getStartDate() != null && jobConfig.getFixDelay() > 0) {
+                new FixDelayBootstrap(regCenter, newElasticJobInstance(jobConfig), jobConfig).schedule();
             } else if (!isAllShardingItemsCompleted(jobConfig)) {
                 new OneOffJobBootstrap(regCenter, newElasticJobInstance(jobConfig), jobConfig).execute();
             }
         }
-        
+
         private boolean isAllShardingItemsCompleted(final JobConfiguration jobConfig) {
             JobNodePath jobNodePath = new JobNodePath(jobConfig.getJobName());
             return IntStream.range(0, jobConfig.getShardingTotalCount())
                     .allMatch(each -> regCenter.isExisted(jobNodePath.getShardingNodePath(String.valueOf(each), "completed")));
         }
-        
+
         private ElasticJob newElasticJobInstance(final JobConfiguration jobConfig) {
             String clazz = regCenter.get(String.format("/%s", jobConfig.getJobName()));
             try {
@@ -89,7 +97,7 @@ public final class JobInstanceRegistry {
                 throw new RuntimeException(String.format("new elastic job instance by class '%s' failure", clazz), ex);
             }
         }
-        
+
         private boolean isLabelMatch(final JobConfiguration jobConfig) {
             if (jobConfig.getLabel() == null) {
                 return false;
@@ -99,7 +107,7 @@ public final class JobInstanceRegistry {
             }
             return Arrays.stream(jobInstance.getLabels().split(",")).collect(Collectors.toSet()).contains(jobConfig.getLabel());
         }
-        
+
         private boolean isJobConfigPath(final String path) {
             return JOB_CONFIG_COMPILE.matcher(path).matches();
         }
