@@ -43,7 +43,7 @@ public final class JobConfiguration {
 
     private final int fixDelay;
 
-    private final Integer repeatCount;
+    private final int repeatCount;
 
     private final int shardingTotalCount;
 
@@ -103,7 +103,7 @@ public final class JobConfiguration {
 
         private int fixDelay = -1;
 
-        private Integer repeatCount;
+        private int repeatCount = -1;
 
         private final int shardingTotalCount;
 
@@ -173,7 +173,7 @@ public final class JobConfiguration {
          * @param repeatCount Repeat count
          * @return job configuration builder
          */
-        public Builder repeatCount(final Integer repeatCount) {
+        public Builder repeatCount(final int repeatCount) {
             this.repeatCount = repeatCount;
             return this;
         }

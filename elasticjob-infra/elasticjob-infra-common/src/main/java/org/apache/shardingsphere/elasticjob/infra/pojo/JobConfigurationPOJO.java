@@ -43,7 +43,7 @@ public final class JobConfigurationPOJO {
 
     private int fixDelay;
 
-    private Integer repeatCount;
+    private int repeatCount;
 
     private int shardingTotalCount;
 
