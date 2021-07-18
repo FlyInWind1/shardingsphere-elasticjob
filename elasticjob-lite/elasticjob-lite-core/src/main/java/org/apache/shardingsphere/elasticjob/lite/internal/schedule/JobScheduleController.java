@@ -96,6 +96,25 @@ public final class JobScheduleController {
     }
 
     /**
+     * Reschedule job.
+     *
+     * @param startDate   startDate
+     * @param fixDelay    fixDelay
+     * @param repeatCount repeatCount
+     */
+    public synchronized void rescheduleJob(final Date startDate, final int fixDelay, final int repeatCount) {
+        try {
+            SimpleTriggerImpl trigger = (SimpleTriggerImpl) scheduler.getTrigger(TriggerKey.triggerKey(triggerIdentity));
+            if (!scheduler.isShutdown() && null != trigger
+                    && (!startDate.equals(trigger.getStartTime()) || fixDelay * 1000L != trigger.getRepeatInterval() || repeatCount != trigger.getRepeatCount())) {
+                scheduler.rescheduleJob(TriggerKey.triggerKey(triggerIdentity), createFixDelayTrigger(startDate, fixDelay, repeatCount));
+            }
+        } catch (final SchedulerException ex) {
+            throw new JobSystemException(ex);
+        }
+    }
+
+    /**
      * Reschedule OneOff job.
      */
     public synchronized void rescheduleJob() {
