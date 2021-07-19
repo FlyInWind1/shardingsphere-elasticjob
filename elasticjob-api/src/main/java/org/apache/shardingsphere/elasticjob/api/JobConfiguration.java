@@ -449,6 +449,9 @@ public final class JobConfiguration {
         public final JobConfiguration build() {
             Preconditions.checkArgument(!Strings.isNullOrEmpty(jobName), "jobName can not be empty.");
             Preconditions.checkArgument(shardingTotalCount > 0, "shardingTotalCount should larger than zero.");
+            if (fixDelay > 0 && startDate == null) {
+                startDate = new Date();
+            }
             return new JobConfiguration(jobName, cron, startDate, fixDelay, repeatCount, shardingTotalCount, shardingItemParameters, jobParameter,
                     monitorExecution, failover, misfire, maxTimeDiffSeconds, reconcileIntervalMinutes,
                     jobShardingStrategyType, jobExecutorServiceHandlerType, jobErrorHandlerType, jobListenerTypes,
