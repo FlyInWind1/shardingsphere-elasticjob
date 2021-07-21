@@ -45,7 +45,7 @@ public final class FixDelayBootstrap implements JobBootstrap {
      */
     public void schedule() {
         JobConfiguration jobConfig = jobScheduler.getJobConfig();
-        Preconditions.checkArgument(StringUtils.isNotEmpty(jobConfig.getCron()), "Cron should be empty.");
+        Preconditions.checkArgument(StringUtils.isEmpty(jobConfig.getCron()), "Cron should be empty.");
         Preconditions.checkArgument(jobConfig.getStartDate() != null, "startDate can not be null.");
         Preconditions.checkArgument(jobConfig.getFixDelay() > 0, "delay can not letter then 0.");
         Preconditions.checkArgument(jobConfig.getRepeatCount() == -1 || jobConfig.getRepeatCount() > 0, "repeatCount can not letter then -1 or 0.");
