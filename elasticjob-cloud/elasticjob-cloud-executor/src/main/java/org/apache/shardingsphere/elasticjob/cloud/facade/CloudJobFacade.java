@@ -112,4 +112,9 @@ public final class CloudJobFacade implements JobFacade {
         jobTracingEventBus.post(new JobStatusTraceEvent(taskContext.getMetaInfo().getJobName(), taskContext.getId(), taskContext.getSlaveId(), 
                 Source.CLOUD_EXECUTOR, taskContext.getType().toString(), String.valueOf(taskContext.getMetaInfo().getShardingItems()), state, message));
     }
+
+    @Override
+    public void cleanupJob() {
+
+    }
 }

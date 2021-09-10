@@ -33,6 +33,9 @@ public final class LiteJob implements Job {
     @Override
     public void execute(final JobExecutionContext context) {
         jobExecutor.execute();
+        if (context.getNextFireTime() == null) {
+            jobExecutor.finish();
+        }
     }
     
 }

@@ -167,4 +167,9 @@ public final class LiteJobFacade implements JobFacade {
             log.trace(message);
         }
     }
+
+    @Override
+    public void cleanupJob() throws Exception {
+        shardingService.cleanupJob();
+    }
 }

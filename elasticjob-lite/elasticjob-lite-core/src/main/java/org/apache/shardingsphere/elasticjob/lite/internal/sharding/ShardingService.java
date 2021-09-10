@@ -223,7 +223,17 @@ public final class ShardingService {
         }
         return false;
     }
-    
+
+    /**
+     * remove all server instances, and cleanup in zookeeper.
+     * @throws Exception exception
+     */
+    public void cleanupJob() throws Exception {
+        if (leaderService.isLeaderUntilBlock()) {
+            jobNodeStorage.cleanupJob();
+        }
+    }
+
     @RequiredArgsConstructor
     class PersistShardingInfoTransactionExecutionCallback implements TransactionExecutionCallback {
         

@@ -256,4 +256,14 @@ public final class JobNodeStorage {
     public long getRegistryCenterTime() {
         return regCenter.getRegistryCenterTime(jobNodePath.getFullPath("systemTime/current"));
     }
+
+    /**
+     * remove all server instances, and cleanup in zookeeper.
+     *
+     * @throws Exception exception
+     */
+    public void cleanupJob() throws Exception {
+        getClient().delete().quietly().deletingChildrenIfNeeded().forPath("/" + jobName + "/instances");
+        getClient().delete().quietly().deletingChildrenIfNeeded().forPath("/" + jobName);
+    }
 }

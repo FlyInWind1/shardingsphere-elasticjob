@@ -183,7 +183,23 @@ public final class ElasticJobExecutor {
             jobErrorHandler.handleException(jobConfig.getJobName(), cause);
         }
     }
-    
+
+    /**
+     * finish job.
+     */
+    public void finish() {
+        JobConfiguration jobConfig = jobFacade.loadJobConfiguration(true);
+        if (jobConfig.isCleanupAfterFinish()) {
+            try {
+                jobFacade.cleanupJob();
+                // CHECKSTYLE:OFF
+            } catch (Exception e) {
+                // CHECKSTYLE:ON
+                executorContext.get(JobErrorHandler.class).handleException(jobConfig.getJobName(), e);
+            }
+        }
+    }
+
     /**
      * Shutdown executor.
      */

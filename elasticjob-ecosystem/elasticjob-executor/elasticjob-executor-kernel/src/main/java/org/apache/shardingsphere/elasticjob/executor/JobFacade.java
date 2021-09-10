@@ -130,4 +130,11 @@ public interface JobFacade {
      * @param message job message
      */
     void postJobStatusTraceEvent(String taskId, State state, String message);
+
+    /**
+     * remove all server instances, and cleanup in zookeeper.
+     *
+     * @throws Exception exception
+     */
+    void cleanupJob() throws Exception;
 }

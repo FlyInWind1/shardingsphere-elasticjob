@@ -86,6 +86,8 @@ public final class JobConfiguration {
 
     private final boolean staticSharding;
 
+    private final boolean cleanupAfterFinish;
+
     /**
      * Create ElasticJob configuration builder.
      *
@@ -147,6 +149,8 @@ public final class JobConfiguration {
         private String label;
 
         private boolean staticSharding;
+
+        private boolean cleanupAfterFinish;
 
         /**
          * Cron expression.
@@ -442,6 +446,17 @@ public final class JobConfiguration {
         }
 
         /**
+         * Set cleanupAfterFinish.
+         *
+         * @param cleanupAfterFinish cleanupAfterFinish
+         * @return ElasticJob configuration builder
+         */
+        public Builder cleanupAfterFinish(final boolean cleanupAfterFinish) {
+            this.cleanupAfterFinish = cleanupAfterFinish;
+            return this;
+        }
+
+        /**
          * Build ElasticJob configuration.
          *
          * @return ElasticJob configuration
@@ -455,7 +470,7 @@ public final class JobConfiguration {
             return new JobConfiguration(jobName, cron, startDate, fixDelay, repeatCount, shardingTotalCount, shardingItemParameters, jobParameter,
                     monitorExecution, failover, misfire, maxTimeDiffSeconds, reconcileIntervalMinutes,
                     jobShardingStrategyType, jobExecutorServiceHandlerType, jobErrorHandlerType, jobListenerTypes,
-                    extraConfigurations, description, props, disabled, overwrite, label, staticSharding);
+                    extraConfigurations, description, props, disabled, overwrite, label, staticSharding, cleanupAfterFinish);
         }
     }
 }
