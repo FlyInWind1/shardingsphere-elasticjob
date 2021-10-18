@@ -42,6 +42,8 @@ public final class JobConfigurationPOJO {
 
     private String cron;
 
+    private String timeZone;
+
     private Date startDate;
 
     private int fixDelay;
@@ -95,13 +97,13 @@ public final class JobConfigurationPOJO {
      */
     public JobConfiguration toJobConfiguration() {
         JobConfiguration result = JobConfiguration.newBuilder(jobName, shardingTotalCount)
-                .cron(cron).startDate(startDate).fixDelay(fixDelay).repeatCount(repeatCount)
+                .cron(cron).timeZone(timeZone).startDate(startDate).fixDelay(fixDelay).repeatCount(repeatCount)
                 .shardingItemParameters(shardingItemParameters).jobParameter(jobParameter)
                 .monitorExecution(monitorExecution).failover(failover).misfire(misfire)
                 .maxTimeDiffSeconds(maxTimeDiffSeconds).reconcileIntervalMinutes(reconcileIntervalMinutes)
                 .jobShardingStrategyType(jobShardingStrategyType).jobExecutorServiceHandlerType(jobExecutorServiceHandlerType)
                 .jobErrorHandlerType(jobErrorHandlerType).jobListenerTypes(jobListenerTypes.toArray(new String[]{})).description(description)
-                .disabled(disabled).overwrite(overwrite).label(label).staticSharding(staticSharding).cleanupAfterFinish(cleanupAfterFinish).build();
+                .disabled(disabled).overwrite(overwrite).label(label).staticSharding(staticSharding).build();
         jobExtraConfigurations.stream().map(YamlConfiguration::toConfiguration).forEach(result.getExtraConfigurations()::add);
         for (Object each : props.keySet()) {
             result.getProps().setProperty(each.toString(), props.get(each.toString()).toString());
@@ -119,10 +121,11 @@ public final class JobConfigurationPOJO {
     public static JobConfigurationPOJO fromJobConfiguration(final JobConfiguration jobConfiguration) {
         JobConfigurationPOJO result = new JobConfigurationPOJO();
         result.setJobName(jobConfiguration.getJobName());
+        result.setCron(jobConfiguration.getCron());
+        result.setTimeZone(jobConfiguration.getTimeZone());
         result.setStartDate(jobConfiguration.getStartDate());
         result.setFixDelay(jobConfiguration.getFixDelay());
         result.setRepeatCount(jobConfiguration.getRepeatCount());
-        result.setCron(jobConfiguration.getCron());
         result.setShardingTotalCount(jobConfiguration.getShardingTotalCount());
         result.setShardingItemParameters(jobConfiguration.getShardingItemParameters());
         result.setJobParameter(jobConfiguration.getJobParameter());

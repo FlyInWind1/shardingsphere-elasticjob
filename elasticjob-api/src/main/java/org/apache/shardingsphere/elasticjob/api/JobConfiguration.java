@@ -42,6 +42,8 @@ public final class JobConfiguration {
 
     private final String cron;
 
+    private final String timeZone;
+
     private final Date startDate;
 
     private final int fixDelay;
@@ -91,7 +93,7 @@ public final class JobConfiguration {
     /**
      * Create ElasticJob configuration builder.
      *
-     * @param jobName            job name
+     * @param jobName job name
      * @param shardingTotalCount sharding total count
      * @return ElasticJob configuration builder
      */
@@ -107,6 +109,8 @@ public final class JobConfiguration {
         private Date startDate;
 
         private String cron;
+
+        private String timeZone;
 
         private int fixDelay = -1;
 
@@ -161,6 +165,19 @@ public final class JobConfiguration {
         public Builder cron(final String cron) {
             if (null != cron) {
                 this.cron = cron;
+            }
+            return this;
+        }
+
+        /**
+         * time zone.
+         *
+         * @param timeZone the time zone
+         * @return job configuration builder
+         */
+        public Builder timeZone(final String timeZone) {
+            if (null != timeZone) {
+                this.timeZone = timeZone;
             }
             return this;
         }
@@ -223,6 +240,7 @@ public final class JobConfiguration {
          * Set job parameter.
          *
          * @param jobParameter job parameter
+         *
          * @return job configuration builder
          */
         public Builder jobParameter(final String jobParameter) {
@@ -384,7 +402,7 @@ public final class JobConfiguration {
         /**
          * Set property.
          *
-         * @param key   property key
+         * @param key property key
          * @param value property value
          * @return job configuration builder
          */
@@ -412,7 +430,7 @@ public final class JobConfiguration {
          * Set whether overwrite local configuration to registry center when job startup.
          *
          * <p>
-         * If overwrite enabled, every startup will use local configuration.
+         *  If overwrite enabled, every startup will use local configuration.
          * </p>
          *
          * @param overwrite whether overwrite local configuration to registry center when job startup
@@ -467,7 +485,7 @@ public final class JobConfiguration {
             if (fixDelay > 0 && startDate == null) {
                 startDate = new Date();
             }
-            return new JobConfiguration(jobName, cron, startDate, fixDelay, repeatCount, shardingTotalCount, shardingItemParameters, jobParameter,
+            return new JobConfiguration(jobName, cron, timeZone, startDate, fixDelay, repeatCount, shardingTotalCount, shardingItemParameters, jobParameter,
                     monitorExecution, failover, misfire, maxTimeDiffSeconds, reconcileIntervalMinutes,
                     jobShardingStrategyType, jobExecutorServiceHandlerType, jobErrorHandlerType, jobListenerTypes,
                     extraConfigurations, description, props, disabled, overwrite, label, staticSharding, cleanupAfterFinish);

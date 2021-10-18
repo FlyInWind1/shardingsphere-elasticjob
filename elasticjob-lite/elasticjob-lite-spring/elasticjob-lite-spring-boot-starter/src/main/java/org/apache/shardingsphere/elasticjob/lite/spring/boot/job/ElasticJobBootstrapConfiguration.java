@@ -25,6 +25,7 @@ import org.apache.shardingsphere.elasticjob.api.ElasticJob;
 import org.apache.shardingsphere.elasticjob.api.JobConfiguration;
 import org.apache.shardingsphere.elasticjob.lite.api.bootstrap.impl.OneOffJobBootstrap;
 import org.apache.shardingsphere.elasticjob.lite.api.bootstrap.impl.ScheduleJobBootstrap;
+import org.apache.shardingsphere.elasticjob.lite.spring.boot.tracing.TracingProperties;
 import org.apache.shardingsphere.elasticjob.reg.base.CoordinatorRegistryCenter;
 import org.apache.shardingsphere.elasticjob.tracing.api.TracingConfiguration;
 import org.springframework.beans.factory.BeanCreationException;
@@ -35,7 +36,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * JobBootstrap configuration.
@@ -45,7 +45,7 @@ public class ElasticJobBootstrapConfiguration implements SmartInitializingSingle
 
     @Setter
     private ApplicationContext applicationContext;
-
+    
     @Override
     public void afterSingletonsInstantiated() {
         log.info("creating Job Bootstrap Beans");
@@ -98,7 +98,7 @@ public class ElasticJobBootstrapConfiguration implements SmartInitializingSingle
     private void registerClassedJob(final String jobName, final String jobBootstrapBeanName, final SingletonBeanRegistry singletonBeanRegistry, final CoordinatorRegistryCenter registryCenter,
                                     final TracingConfiguration<?> tracingConfig, final ElasticJobConfigurationProperties jobConfigurationProperties) {
         JobConfiguration jobConfig = jobConfigurationProperties.toJobConfiguration(jobName);
-        Optional.ofNullable(tracingConfig).ifPresent(jobConfig.getExtraConfigurations()::add);
+        jobExtraConfigurations(jobConfig, tracingConfig);
         ElasticJob elasticJob = applicationContext.getBean(jobConfigurationProperties.getElasticJobClass());
         if (Strings.isNullOrEmpty(jobConfig.getCron())) {
             Preconditions.checkArgument(!Strings.isNullOrEmpty(jobBootstrapBeanName), "The property [jobBootstrapBeanName] is required for One-off job.");
@@ -112,13 +112,26 @@ public class ElasticJobBootstrapConfiguration implements SmartInitializingSingle
     private void registerTypedJob(final String jobName, final String jobBootstrapBeanName, final SingletonBeanRegistry singletonBeanRegistry, final CoordinatorRegistryCenter registryCenter,
                                   final TracingConfiguration<?> tracingConfig, final ElasticJobConfigurationProperties jobConfigurationProperties) {
         JobConfiguration jobConfig = jobConfigurationProperties.toJobConfiguration(jobName);
-        Optional.ofNullable(tracingConfig).ifPresent(jobConfig.getExtraConfigurations()::add);
+        jobExtraConfigurations(jobConfig, tracingConfig);
         if (Strings.isNullOrEmpty(jobConfig.getCron())) {
             Preconditions.checkArgument(!Strings.isNullOrEmpty(jobBootstrapBeanName), "The property [jobBootstrapBeanName] is required for One-off job.");
             singletonBeanRegistry.registerSingleton(jobBootstrapBeanName, new OneOffJobBootstrap(registryCenter, jobConfigurationProperties.getElasticJobType(), jobConfig));
         } else {
             String beanName = !Strings.isNullOrEmpty(jobBootstrapBeanName) ? jobBootstrapBeanName : jobConfig.getJobName() + "ScheduleJobBootstrap";
             singletonBeanRegistry.registerSingleton(beanName, new ScheduleJobBootstrap(registryCenter, jobConfigurationProperties.getElasticJobType(), jobConfig));
+        }
+    }
+    
+    private void jobExtraConfigurations(final JobConfiguration jobConfig, final TracingConfiguration<?> tracingConfig) {
+        if (null == tracingConfig) {
+            return;
+        }
+        TracingProperties tracingProperties = applicationContext.getBean(TracingProperties.class);
+        Preconditions.checkArgument(tracingProperties.getIncludeJobNames().isEmpty() || tracingProperties.getExcludeJobNames().isEmpty(),
+                "[tracing.includeJobNames] and [tracing.excludeJobNames] are mutually exclusive.");
+        if ((tracingProperties.getIncludeJobNames().isEmpty() || tracingProperties.getIncludeJobNames().contains(jobConfig.getJobName()))
+                && !tracingProperties.getExcludeJobNames().contains(jobConfig.getJobName())) {
+            jobConfig.getExtraConfigurations().add(tracingConfig);
         }
     }
 }

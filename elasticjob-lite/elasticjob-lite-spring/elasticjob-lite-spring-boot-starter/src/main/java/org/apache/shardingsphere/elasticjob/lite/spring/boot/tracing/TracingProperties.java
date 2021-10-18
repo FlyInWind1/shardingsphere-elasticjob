@@ -15,19 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.shardingsphere.elasticjob.lite.spring.namespace.job.util;
+package org.apache.shardingsphere.elasticjob.lite.spring.boot.tracing;
 
-import org.apache.shardingsphere.elasticjob.api.ElasticJob;
-import org.apache.shardingsphere.elasticjob.api.ShardingContext;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
-public class TargetJob implements ElasticJob {
+import java.util.HashSet;
+import java.util.Set;
+
+@Getter
+@Setter
+@ConfigurationProperties(prefix = "elasticjob.tracing")
+public class TracingProperties {
     
-    /**
-     * Mocker object for AopTargetUtilsTest.
-     *
-     * @param shardingContext shardingContext
-     */
-    public void execute(final ShardingContext shardingContext) {
+    private String type;
     
-    }
+    private Set<String> includeJobNames = new HashSet<>();
+    
+    private Set<String> excludeJobNames = new HashSet<>();
 }

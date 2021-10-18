@@ -19,8 +19,8 @@ package org.apache.shardingsphere.elasticjob.lite.internal.config;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shardingsphere.elasticjob.api.JobConfiguration;
-import org.apache.shardingsphere.elasticjob.infra.pojo.JobConfigurationPOJO;
 import org.apache.shardingsphere.elasticjob.infra.yaml.YamlEngine;
+import org.apache.shardingsphere.elasticjob.infra.pojo.JobConfigurationPOJO;
 import org.apache.shardingsphere.elasticjob.lite.internal.listener.AbstractJobListener;
 import org.apache.shardingsphere.elasticjob.lite.internal.listener.AbstractListenerManager;
 import org.apache.shardingsphere.elasticjob.lite.internal.schedule.JobRegistry;
@@ -52,12 +52,12 @@ public final class RescheduleListenerManager extends AbstractListenerManager {
         protected void dataChanged(final String path, final Type eventType, final String data) {
             if (configNode.isConfigPath(path) && Type.NODE_CHANGED == eventType && !JobRegistry.getInstance().isShutdown(jobName)) {
                 JobConfiguration jobConfiguration = YamlEngine.unmarshal(data, JobConfigurationPOJO.class).toJobConfiguration();
-                if (StringUtils.isNotEmpty(jobConfiguration.getCron())) {
-                    JobRegistry.getInstance().getJobScheduleController(jobName).rescheduleJob(jobConfiguration.getCron());
+                if (StringUtils.isEmpty(jobConfiguration.getCron())) {
+                    JobRegistry.getInstance().getJobScheduleController(jobName).rescheduleJob();
                 } else if (jobConfiguration.getStartDate() != null && jobConfiguration.getFixDelay() > 0) {
                     JobRegistry.getInstance().getJobScheduleController(jobName).rescheduleJob(jobConfiguration.getStartDate(), jobConfiguration.getFixDelay(), jobConfiguration.getRepeatCount());
                 } else {
-                    JobRegistry.getInstance().getJobScheduleController(jobName).rescheduleJob();
+                    JobRegistry.getInstance().getJobScheduleController(jobName).rescheduleJob(jobConfiguration.getCron(), jobConfiguration.getTimeZone());
                 }
             }
         }
