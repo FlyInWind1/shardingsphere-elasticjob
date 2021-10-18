@@ -155,33 +155,13 @@ public final class JobScheduleController {
     }
 
     private Trigger createFixDelayTrigger(final Date startDate, final int fixDelay, final int repeatCount) {
-        long startTime = startDate.getTime();
-        long nowTime = System.currentTimeMillis();
-        Date finalStartDate;
-        int finalRepeatCount;
-        if (startTime < nowTime) {
-            long delayMillis = fixDelay * 1000L;
-            long passedMillis = startTime - nowTime;
-            if (repeatCount > 0 && passedMillis / delayMillis >= repeatCount) {
-                throw new JobSystemException("repeat count all consumed");
-            } else if (repeatCount > 0) {
-                finalRepeatCount = (int) (repeatCount - passedMillis / delayMillis);
-            } else {
-                finalRepeatCount = repeatCount;
-            }
-            long l = passedMillis % delayMillis;
-            finalStartDate = new Date(nowTime + delayMillis + l);
-        } else {
-            finalStartDate = startDate;
-            finalRepeatCount = repeatCount;
-        }
         SimpleScheduleBuilder scheduleBuilder;
-        if (finalRepeatCount < 0) {
+        if (repeatCount < 0) {
             scheduleBuilder = SimpleScheduleBuilder.repeatSecondlyForever(fixDelay);
         } else {
-            scheduleBuilder = SimpleScheduleBuilder.repeatSecondlyForTotalCount(finalRepeatCount, fixDelay);
+            scheduleBuilder = SimpleScheduleBuilder.repeatSecondlyForTotalCount(repeatCount, fixDelay);
         }
-        return TriggerBuilder.newTrigger().startAt(finalStartDate).withIdentity(triggerIdentity).withSchedule(scheduleBuilder).build();
+        return TriggerBuilder.newTrigger().startAt(startDate).withIdentity(triggerIdentity).withSchedule(scheduleBuilder).build();
     }
 
     /**
