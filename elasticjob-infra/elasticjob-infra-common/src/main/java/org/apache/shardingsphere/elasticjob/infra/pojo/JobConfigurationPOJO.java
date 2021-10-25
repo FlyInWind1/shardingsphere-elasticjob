@@ -103,7 +103,7 @@ public final class JobConfigurationPOJO {
                 .maxTimeDiffSeconds(maxTimeDiffSeconds).reconcileIntervalMinutes(reconcileIntervalMinutes)
                 .jobShardingStrategyType(jobShardingStrategyType).jobExecutorServiceHandlerType(jobExecutorServiceHandlerType)
                 .jobErrorHandlerType(jobErrorHandlerType).jobListenerTypes(jobListenerTypes.toArray(new String[]{})).description(description)
-                .disabled(disabled).overwrite(overwrite).label(label).staticSharding(staticSharding).build();
+                .disabled(disabled).overwrite(overwrite).label(label).staticSharding(staticSharding).cleanupAfterFinish(cleanupAfterFinish).build();
         jobExtraConfigurations.stream().map(YamlConfiguration::toConfiguration).forEach(result.getExtraConfigurations()::add);
         for (Object each : props.keySet()) {
             result.getProps().setProperty(each.toString(), props.get(each.toString()).toString());

@@ -20,6 +20,8 @@ package org.apache.shardingsphere.elasticjob.lite.internal.schedule;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import org.apache.shardingsphere.elasticjob.executor.JobFacade;
 import org.apache.shardingsphere.elasticjob.infra.exception.JobSystemException;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
@@ -31,10 +33,10 @@ import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.TriggerKey;
+import org.quartz.impl.triggers.AbstractTrigger;
 import org.quartz.impl.triggers.SimpleTriggerImpl;
 
 import java.util.Date;
-
 import java.util.TimeZone;
 
 /**
@@ -48,6 +50,8 @@ public final class JobScheduleController {
     private final JobDetail jobDetail;
 
     private final String triggerIdentity;
+
+    private final JobFacade jobFacade;
 
     /**
      * Schedule job.
@@ -76,7 +80,10 @@ public final class JobScheduleController {
     public void scheduleJob(final Date startDate, final int fixDelay, final int repeatCount) {
         try {
             if (!scheduler.checkExists(jobDetail.getKey())) {
-                scheduler.scheduleJob(jobDetail, createFixDelayTrigger(startDate, fixDelay, repeatCount));
+                Trigger trigger = createFixDelayTrigger(startDate, fixDelay, repeatCount);
+                if (!cleanupIfNecessary(trigger)) {
+                    scheduler.scheduleJob(jobDetail, trigger);
+                }
             }
             scheduler.start();
         } catch (final SchedulerException ex) {
@@ -110,10 +117,13 @@ public final class JobScheduleController {
      */
     public synchronized void rescheduleJob(final Date startDate, final int fixDelay, final int repeatCount) {
         try {
-            SimpleTriggerImpl trigger = (SimpleTriggerImpl) scheduler.getTrigger(TriggerKey.triggerKey(triggerIdentity));
-            if (!scheduler.isShutdown() && null != trigger
-                    && (!startDate.equals(trigger.getStartTime()) || fixDelay * 1000L != trigger.getRepeatInterval() || repeatCount != trigger.getRepeatCount())) {
-                scheduler.rescheduleJob(TriggerKey.triggerKey(triggerIdentity), createFixDelayTrigger(startDate, fixDelay, repeatCount));
+            SimpleTriggerImpl oldTrigger = (SimpleTriggerImpl) scheduler.getTrigger(TriggerKey.triggerKey(triggerIdentity));
+            if (!scheduler.isShutdown() && null != oldTrigger
+                    && (!startDate.equals(oldTrigger.getStartTime()) || fixDelay * 1000L != oldTrigger.getRepeatInterval() || repeatCount != oldTrigger.getRepeatCount())) {
+                Trigger newTrigger = createFixDelayTrigger(startDate, fixDelay, repeatCount);
+                if (!cleanupIfNecessary(newTrigger)) {
+                    scheduler.rescheduleJob(TriggerKey.triggerKey(triggerIdentity), newTrigger);
+                }
             }
         } catch (final SchedulerException ex) {
             throw new JobSystemException(ex);
@@ -161,6 +171,7 @@ public final class JobScheduleController {
         } else {
             scheduleBuilder = SimpleScheduleBuilder.repeatSecondlyForTotalCount(repeatCount, fixDelay);
         }
+        scheduleBuilder.withMisfireHandlingInstructionNextWithRemainingCount();
         return TriggerBuilder.newTrigger().startAt(startDate).withIdentity(triggerIdentity).withSchedule(scheduleBuilder).build();
     }
 
@@ -247,5 +258,18 @@ public final class JobScheduleController {
         } catch (final SchedulerException ex) {
             throw new JobSystemException(ex);
         }
+    }
+
+    @SneakyThrows
+    private boolean cleanupIfNecessary(final Trigger trigger) {
+        if (jobFacade.loadJobConfiguration(true).isCleanupAfterFinish()) {
+            AbstractTrigger<?> abstractTrigger = (AbstractTrigger<?>) trigger;
+            Date finalFireTime = abstractTrigger.getFinalFireTime();
+            if (finalFireTime != null && finalFireTime.before(new Date())) {
+                jobFacade.cleanupJob();
+                return true;
+            }
+        }
+        return false;
     }
 }

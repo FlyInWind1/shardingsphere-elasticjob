@@ -88,6 +88,7 @@ public final class ShardingService {
             return;
         }
         jobNodeStorage.createJobNodeIfNeeded(ShardingNode.NECESSARY);
+        jobNodeStorage.createJobNodeIfNeeded(ShardingNode.SHARED);
     }
     
     /**
@@ -96,9 +97,19 @@ public final class ShardingService {
      * @return is need resharding or not
      */
     public boolean isNeedSharding() {
+        waitSharedCreated();
         return jobNodeStorage.isJobNodeExisted(ShardingNode.NECESSARY);
     }
-    
+
+    /**
+     * Wait first shared.
+     */
+    private void waitSharedCreated() {
+        while (!jobNodeStorage.isJobNodeExisted(ShardingNode.SHARED)) {
+            BlockUtils.waitingShortTime();
+        }
+    }
+
     /**
      * Sharding if necessary.
      * 

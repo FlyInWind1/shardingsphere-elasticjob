@@ -42,7 +42,9 @@ public final class ShardingNode {
     private static final String LEADER_ROOT = LeaderNode.ROOT + "/" + ROOT;
     
     static final String NECESSARY = LEADER_ROOT + "/necessary";
-    
+
+    static final String SHARED = LEADER_ROOT + "/shared";
+
     static final String PROCESSING = LEADER_ROOT + "/processing";
     
     private final JobNodePath jobNodePath;
